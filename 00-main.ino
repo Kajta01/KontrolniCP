@@ -31,14 +31,14 @@ void setup()
  {
      if(digitalRead(BUTTON) == 0)
      {
-     
+     Serial.println("------------------------");
      Serial.print("Voltage:");
      Serial.println(ReadAnalogVoltage()*2);
      Serial.print("RTC:");
      Serial.println(RTCRead());
-     Serial.print("RFID:");
+     Serial.println("RFID:");
      RFID_loop();
-     Serial.print("LORA:");
+     Serial.println("LORA:");
      LORA_loop();
      buzzer();
      }
