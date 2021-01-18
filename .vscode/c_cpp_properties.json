@@ -1,0 +1,35 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "C:\\Program Files (x86)\\Arduino\\tools\\**",
+                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**",
+                "C:\\\\Program Files (x86)\\\\Arduino\\\\hardware\\\\arduino\\\\avr\\\\**",
+                "C:\\\\Program Files (x86)\\\\Arduino\\\\tools\\\\**",
+                "C:\\\\Program Files (x86)\\\\Arduino\\\\hardware\\\\tools\\\\**",
+                "C:\\\\Program Files (x86)\\\\Arduino\\\\libraries\\\\**",
+                "C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr",
+                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino",
+                "C:\\Program Files (x86)\\Arduino/hardware\\arduino\\avr\\variants\\standard",
+                "C:\\Program Files (x86)\\Arduino",
+                "C:\\Program Files (x86)\\Arduino\\libraries\\**",
+                "C:/Program Files (x86)/Arduino/hardware/arduino/avr/libraries/SPI/src",
+                "C:/Users/kamac/OneDrive/Dokumenty/Arduino/libraries/RN2483-Arduino-Library-master",
+                "C:/Users/kamac/OneDrive/Dokumenty/Arduino/libraries/RTClib-master",
+                "C:/Users/kamac/OneDrive/00 Diplomka/02. Coding/Code"
+            ],
+            "forcedInclude": [
+                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
+            ],
+            "intelliSenseMode": "gcc-x86",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "defines": [
+                "USBCON"
+            ],
+            "compilerPath": "C:/Program Files (x86)/Arduino/hardware/tools/avr/bin/avr-gcc.exe"
+        }
+    ],
+    "version": 4
+}
