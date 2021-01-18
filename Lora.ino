@@ -83,6 +83,7 @@ void initialize_radio()
     Serial.println("Communication with RN2xx3 unsuccessful. Power cycle the board.");
     Serial.println(hweui);
     delay(10000);
+    
     hweui = myLora.hweui();
   }
 
