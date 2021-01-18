@@ -13,6 +13,11 @@
 const char *devAddr = "26011C79";
 const char *nwkSKey = "B5C7617898FE02D5B85C96982E7BEA73";
 const char *appSKey = "2DAA66D68271DEAAF00FA821B4EEC5F5";
+
+#define LORA_RX 4
+#define LORA_TX 5
+#define LORA_RESET 3
+
 //
 #define ID 10
 

@@ -38,8 +38,10 @@
 #include <rn2xx3.h>
 #include <SoftwareSerial.h>
 
-SoftwareSerial mySerial(4,5); // RX, TX
-#define ResetPin 3
+
+
+SoftwareSerial mySerial(LORA_RX,LORA_TX); // RX, TX
+
 
 //create an instance of the rn2xx3 library,
 //giving the software serial as port to use
@@ -65,10 +67,10 @@ void LORA_setup()
 void initialize_radio()
 {
   //reset rn2483
-  pinMode(ResetPin, OUTPUT);
-  digitalWrite(ResetPin, LOW);
+  pinMode(LORA_RESET, OUTPUT);
+  digitalWrite(LORA_RESET, LOW);
   delay(500);
-  digitalWrite(ResetPin, HIGH);
+  digitalWrite(LORA_RESET, HIGH);
 
   delay(100); //wait for the RN2xx3's startup message
   mySerial.flush();
@@ -116,13 +118,13 @@ void initialize_radio()
   //join_result = myLora.initOTAA(appEui, appKey);
 
 
-  while(!join_result)
+ /* while(!join_result)
   {
     Serial.println("Unable to join. Are your keys correct, and do you have TTN coverage?");
     delay(60000); //delay a minute before retry
     join_result = myLora.init();
-  }
-  Serial.println("Successfully joined TTN");
+  }*/
+  Serial.println("Successfully joined ?");
  
 
 }
