@@ -38,3 +38,33 @@ void feedback(feedbackStatus status)
    }
    digitalWrite(LED1, LOW);
 }
+
+
+
+/*
+
+void GoingToSleep()
+{
+  sleep_enable();
+  attachInterrupt(0,wakeUp, LOW);
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  digitalWrite(led,LOW);
+  delay(1000);
+  sleep_cpu();
+  Serial.println("just woke");
+  digitalWrite(led,HIGH);
+}
+void(* resetFunc) (void) = 0;
+
+void wakeUp()
+{
+    Serial.println("Fired!");
+    sleep_disable();
+    detachInterrupt(0);
+    resetFunc();
+}
+void wakeUpW()
+ {
+  detachInterrupt(0);
+    resetFunc();
+ }*/
