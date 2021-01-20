@@ -1,5 +1,11 @@
 #include "init.h"
 
+enum feedbackStatus
+{
+   OK,
+   ERROR
+};
+
 void setup()
  {
     Serial.begin(9600);
@@ -8,16 +14,16 @@ void setup()
     RFID_setup();
     LORA_setup();
 
+    IO_Setup();
 
-    pinMode(BUTTON, INPUT);
-    pinMode(LED1, OUTPUT);
-    pinMode(LED2, OUTPUT);
-    pinMode(BUZZER, OUTPUT);
+
+
  }
  void loop()
  {
      if(digitalRead(BUTTON) == 0)
      {
+     feedback(OK);    
      Serial.println("------------------------");
      Serial.print("Voltage:");
      Serial.println(ReadAnalogVoltage()*2);
@@ -27,7 +33,7 @@ void setup()
      RFID_loop();
      Serial.println("LORA:");
      LORA_loop();
-     buzzer();
+     feedback(ERROR); 
      }
 
 
