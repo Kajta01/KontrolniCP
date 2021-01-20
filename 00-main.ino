@@ -12,7 +12,7 @@ void setup()
     Serial.println("Starting");
     RTCStart();
     RFID_setup();
-    LORA_setup();
+   // LORA_setup();
 
     IO_Setup();
 
@@ -27,12 +27,18 @@ void setup()
      Serial.println("------------------------");
      Serial.print("Voltage:");
      Serial.println(ReadAnalogVoltage()*2);
+
+
      Serial.print("RTC:");
+
+   RTCSetTime((__DATE__), (__TIME__));
+
+
      Serial.println(RTCRead());
      Serial.println("RFID:");
      RFID_loop();
      Serial.println("LORA:");
-     LORA_loop();
+    // LORA_loop();
      feedback(ERROR); 
      }
 
