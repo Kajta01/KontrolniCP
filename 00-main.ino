@@ -25,6 +25,7 @@ void setup()
  }
  void loop()
  {
+    //attachInterrupt(0,wakeUpW, LOW);
    
 
      if(digitalRead(BUTTON) == 0)
@@ -38,10 +39,8 @@ void setup()
      Serial.print("RTC:");
      Serial.println(RTCRead());
      Serial.println("RFID:");
-     while(1){
-     Serial.println(RFIDTest());
-     }
-     //if(RFIDTest()){RFID_Write();}
+
+     if(RFIDTest()){RFID_Write();}
      Serial.println("LORA:");
      //LORA_loop();
      feedback(ERROR); 

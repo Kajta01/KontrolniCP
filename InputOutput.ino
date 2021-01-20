@@ -31,7 +31,7 @@ void feedback(feedbackStatus status)
       delay(500);
       tone(BUZZER, 1000, 500);
       delay(500);
-      tone(BUZZER, 2000, 500);
+      tone(BUZZER, 2000, 50);
       delay(500);
       digitalWrite(LED2, LOW);
       break;
