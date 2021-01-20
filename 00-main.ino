@@ -26,6 +26,9 @@ void setup()
 
 
     pinMode(BUTTON, INPUT);
+    pinMode(LED1, OUTPUT);
+    pinMode(LED2, OUTPUT);
+    pinMode(BUZZER, OUTPUT);
  }
  void loop()
  {
