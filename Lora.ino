@@ -1,3 +1,5 @@
+#include "init.h"
+
 /*
  * Author: JP Meijers
  * Date: 2016-02-07
@@ -37,6 +39,11 @@
  */
 #include <rn2xx3.h>
 #include <SoftwareSerial.h>
+
+
+const char *devAddr = LORA_DEV_ADDR;
+const char *nwkSKey = LORA_NWKS_KEY;
+const char *appSKey = LORA_APPS_KEY;
 
 SoftwareSerial mySerial(4,5); // RX, TX
 #define ResetPin 3
@@ -133,7 +140,7 @@ void LORA_loop()
  
 
     Serial.print("TXing");
-    myLora.tx(String(ID)); //one byte, blocking function
+    myLora.tx(String(ID_DEVICE)); //one byte, blocking function
 
     // switch(myLora.txCnf("!!")) //one byte, blocking function
     // {

@@ -1,3 +1,5 @@
+#include "init.h"
+
 /**
  * ----------------------------------------------------------------------------
  * This is a MFRC522 library example; see https://github.com/miguelbalboa/rfid

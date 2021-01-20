@@ -1,3 +1,5 @@
+#include "init.h"
+
 void buzzer()
 {
    digitalWrite(LED1, HIGH);
