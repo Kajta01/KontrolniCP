@@ -45,8 +45,11 @@ const char *devAddr = LORA_DEV_ADDR;
 const char *nwkSKey = LORA_NWKS_KEY;
 const char *appSKey = LORA_APPS_KEY;
 
-SoftwareSerial mySerial(4,5); // RX, TX
-#define ResetPin 3
+SoftwareSerial mySerial(6,7); // RX, TX
+#define ResetPin 4
+
+//SoftwareSerial mySerial(4,5); // RX, TX
+//#define ResetPin 3
 
 //create an instance of the rn2xx3 library,
 //giving the software serial as port to use
@@ -167,6 +170,6 @@ void LORA_loop()
     //   }
     // }
 
-    delay(10000);
+    delay(1000);
 }
 
