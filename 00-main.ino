@@ -4,70 +4,63 @@
 
 enum feedbackStatus
 {
-   OK,
-   ERROR
+  OK,
+  ERROR
 };
 
-
 void setup()
- {
-    Serial.begin(9600);
-    Serial.println("Starting");
+{
+  Serial.begin(9600);
+  Serial.println("Starting");
 
-   SPI.begin();		// Init SPI bus
-   RFID_init();
+  //SPI.begin(); // Init SPI bus
+  //RFID_init();
+  /****************RTC**********/
+  RTC_Start();
+  RTC_SetActualTime();
 
-    RTCStart();
+  //LORA_setup();
 
-    //LORA_setup();
+  //RFID_setup();
 
-    RFID_setup();
+  //IO_Setup();
+}
+void loop()
+{
+  //attachInterrupt(0,wakeUpW, LOW);
 
+  if (digitalRead(BUTTON) == 0)
+  {
+    LedOn();
+    //RFID_init();
+    //feedback(OK);
+    Serial.println("------------------------");
+    //Serial.print("Voltage:");
+    //Serial.println(ReadAnalogVoltage() * 2);
 
-    IO_Setup();
-
-
-
- }
- void loop()
- {
-    //attachInterrupt(0,wakeUpW, LOW);
-   
-
-     if(digitalRead(BUTTON) == 0)
-     {
-         LedOn();
-      RFID_init();
-     feedback(OK);    
-     Serial.println("------------------------");
-     Serial.print("Voltage:");
-     Serial.println(ReadAnalogVoltage()*2);
-
-
-     Serial.print("RTC:");
-
-   RTCSetTime((__DATE__), (__TIME__));
+    Serial.println("RTC:");
+    Serial.println(RTC_GetTemperature());
+    Serial.println(RTC_ReadDateTime());
 
 
-     Serial.println(RTCRead());
-     Serial.println("RFID:");
+    //Serial.println(RTCRead());
+    //Serial.println("RFID:");
 
-     if(RFIDTest()){RFID_Write();}
-     Serial.println("LORA:");
+    //if (RFIDTest())
+    //{
+    //  RFID_Write();
+    //}
+    //Serial.println("LORA:");
 
-     //LORA_loop();
+    //LORA_loop();
 
-     feedback(ERROR); 
-     }
+    feedback(ERROR);
+  }
 
+  delay(1000);
+}
 
-
-     delay(1000);
- }
-
-
-
- /*
+/*
  
 #include <avr/sleep.h>
 #define interruptPin 2
@@ -141,4 +134,18 @@ void loop() {
  
  
  */
-
+/*void UpdateTime()
+{
+  digitalWrite(led2,HIGH);
+  Serial.println(getTime());
+  if (!RFIDTest()) { return;  }
+  digitalWrite(led2,HIGH);
+  byte timee[18];
+  byte datee[18];
+  readBlock(1, timee);
+  readBlock(2, datee);
+  rtc.setDateTime(datee,timee);
+  Serial.println(getTime());
+  digitalWrite(led2,LOW);
+  OKDONE(2000);
+}*/
