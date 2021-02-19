@@ -6,9 +6,9 @@
  #define RFID_RST_PIN         A0           // Configurable, see typical pin layout above
  #define RFID_SS_PIN          10          // Configurable, see typical pin layout above
 // //LED
- #define LED1    7
- #define LED2    8
- #define BUZZER  9
+ #define LED1    8
+ #define LED2    9
+ #define BUZZER  5
  //Button
  #define BUTTON 2
 // Lora
