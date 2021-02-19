@@ -1,3 +1,4 @@
+
 #include "init.h"
 #include <SPI.h>
 
@@ -6,6 +7,7 @@ enum feedbackStatus
    OK,
    ERROR
 };
+
 
 void setup()
  {
