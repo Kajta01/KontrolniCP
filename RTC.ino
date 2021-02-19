@@ -17,6 +17,6 @@ void RTCSetTime(){
 
 String RTCRead(){
     now = rtc.now();
-    return  String(now.minute()) + ":" + String(now.second());
+    return  String(String(now.day())+":"+ String(now.hour())+":"+ String(now.minute()) + ":" + String(now.second()));
 }
 
