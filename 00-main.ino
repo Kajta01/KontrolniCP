@@ -1,4 +1,5 @@
 #include "init.h"
+#include <SPI.h>
 
 enum feedbackStatus
 {
@@ -10,9 +11,16 @@ void setup()
  {
     Serial.begin(9600);
     Serial.println("Starting");
+
+   SPI.begin();		// Init SPI bus
+   RFID_init();
+
     RTCStart();
+
+    //LORA_setup();
+
     RFID_setup();
-   // LORA_setup();
+
 
     IO_Setup();
 
@@ -21,8 +29,13 @@ void setup()
  }
  void loop()
  {
+    //attachInterrupt(0,wakeUpW, LOW);
+   
+
      if(digitalRead(BUTTON) == 0)
      {
+         LedOn();
+      RFID_init();
      feedback(OK);    
      Serial.println("------------------------");
      Serial.print("Voltage:");
@@ -36,9 +49,12 @@ void setup()
 
      Serial.println(RTCRead());
      Serial.println("RFID:");
-     RFID_loop();
+
+     if(RFIDTest()){RFID_Write();}
      Serial.println("LORA:");
-    // LORA_loop();
+
+     //LORA_loop();
+
      feedback(ERROR); 
      }
 
@@ -123,3 +139,4 @@ void loop() {
  
  
  */
+

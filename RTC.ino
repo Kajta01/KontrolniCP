@@ -25,8 +25,10 @@ float getTemperature(){
 
 String RTCRead(){
     now = rtc.now();
+
     sprintf(timeBuffer, "%02d-%02d:%02d:%02d", now.day(), now.hour(), now.minute(), now.second());
     return timeBuffer;
+
 }
 
 
