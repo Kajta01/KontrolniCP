@@ -15,5 +15,13 @@
  #define LORA_DEV_ADDR "26011C79"
  #define LORA_NWKS_KEY "B5C7617898FE02D5B85C96982E7BEA73"
  #define LORA_APPS_KEY "2DAA66D68271DEAAF00FA821B4EEC5F5"
+ //#define LORA_RESET = 4
 //
-#define NullData  "0000000000000000"
+#define NullData  "000000000000000"
+// Mode
+#define STANOVISTE              0
+#define STANOVISTE_BEZ_LORY     0
+#define CLEAR_DATA              1
+#define JEN_CTENI               0 // tabulkový výpis // ok
+#define ZAPIS_ID_CIPU           0
+
