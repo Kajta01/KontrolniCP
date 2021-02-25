@@ -106,5 +106,12 @@ void loop()
     feedback(OK);
   }
 #endif
+
+#if JEN_SPANEK
+  LedOn();
+  delay(5000);
+  LedOff();
+  GoingToSleep();
+#endif
   delay(1000);
 }

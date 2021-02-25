@@ -22,9 +22,12 @@
 // Mode
 #define STANOVISTE              0
 #define STANOVISTE_BEZ_LORY     0
+
 #define CLEAR_DATA              0
-#define JEN_CTENI               1 // tabulkový výpis // ok
 #define ZAPIS_ID_CIPU           0
+
+#define JEN_CTENI               0 // tabulkový výpis // ok
 #define JEN_MERENI              0
 #define JEN_ZVUK_LED            0
+#define JEN_SPANEK              1
 

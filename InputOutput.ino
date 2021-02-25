@@ -1,8 +1,9 @@
 #include "init.h"
+#include <avr/sleep.h>
 
 void IO_Setup()
 {
-   pinMode(BUTTON, INPUT);
+   pinMode(BUTTON, INPUT_PULLUP);
    pinMode(LED1, OUTPUT);
    pinMode(LED2, OUTPUT);
    pinMode(BUZZER, OUTPUT);
@@ -11,6 +12,10 @@ void IO_Setup()
 void LedOn()
 {
    digitalWrite(LED1, HIGH);
+}
+void LedOff()
+{
+   digitalWrite(LED1, LOW);
 }
 
 void feedback(feedbackStatus status)
@@ -38,18 +43,23 @@ void feedback(feedbackStatus status)
    digitalWrite(LED1, LOW);
 }
 
-/*
+float ReadAnalogVoltage(){
+    return (analogRead(BATTERY_PIN)*(3.3/1023.00));
+}
+
+
+
 
 void GoingToSleep()
 {
   sleep_enable();
-  attachInterrupt(0,wakeUp, LOW);
+  attachInterrupt(0 ,wakeUp, HIGH);
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  digitalWrite(led,LOW);
+  //digitalWrite(led,LOW);
   delay(1000);
   sleep_cpu();
   Serial.println("just woke");
-  digitalWrite(led,HIGH);
+  LedOn();
 }
 void(* resetFunc) (void) = 0;
 
@@ -60,8 +70,3 @@ void wakeUp()
     detachInterrupt(0);
     resetFunc();
 }
-void wakeUpW()
- {
-  detachInterrupt(0);
-    resetFunc();
- }*/
