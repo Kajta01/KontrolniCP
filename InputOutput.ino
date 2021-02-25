@@ -1,7 +1,5 @@
 #include "init.h"
 
-
-
 void IO_Setup()
 {
    pinMode(BUTTON, INPUT);
@@ -21,8 +19,9 @@ void feedback(feedbackStatus status)
    {
    case OK:
       digitalWrite(LED2, HIGH);
-      tone(BUZZER, 2000, 500);
-      delay(500);
+      digitalWrite(BUZZER, HIGH);
+      delay(1000);
+      digitalWrite(BUZZER, LOW);
       digitalWrite(LED2, LOW);
       break;
    case ERROR:
@@ -38,8 +37,6 @@ void feedback(feedbackStatus status)
    }
    digitalWrite(LED1, LOW);
 }
-
-
 
 /*
 
