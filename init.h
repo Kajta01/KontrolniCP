@@ -17,11 +17,14 @@
  #define LORA_APPS_KEY "2DAA66D68271DEAAF00FA821B4EEC5F5"
  //#define LORA_RESET = 4
 //
-#define NullData  "000000000000000"
+#define NullDataS  "000000000000000"
+#define NullDataB  0x0
 // Mode
 #define STANOVISTE              0
 #define STANOVISTE_BEZ_LORY     0
-#define CLEAR_DATA              1
-#define JEN_CTENI               0 // tabulkový výpis // ok
+#define CLEAR_DATA              0
+#define JEN_CTENI               1 // tabulkový výpis // ok
 #define ZAPIS_ID_CIPU           0
+#define JEN_MERENI              0
+#define JEN_ZVUK_LED            0
 
