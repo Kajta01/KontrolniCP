@@ -22,18 +22,8 @@ void setup()
   RTC_Start();
   RTC_SetActualTime();
 
-  // RFID_init();
+
   // LORA_setup();
-
-
-
-  /****************RTC**********/
-  RTC_Start();
-  RTC_SetActualTime();
-
-  LORA_setup();
-
-  //RFID_setup();
 
 #endif
 }
@@ -46,8 +36,7 @@ void loop()
   if (digitalRead(BUTTON) == 1)
   {
     LedOn();
-    //RFID_init();
-    //feedback(OK);
+
     Serial.println("------------------------");
     Serial.print("Voltage:");
     Serial.println(ReadAnalogVoltage() * 2);
@@ -56,13 +45,16 @@ void loop()
     Serial.println(RTC_GetTemperature());
     Serial.println(RTC_ReadDateTime());
 
-    //Serial.println("RFID:");
+    Serial.println("RFID:");
 
-    //if (RFIDTest())
-    // {
-    //  Serial.println("vložena karta");
+    if (RFIDTest())
+    {
+      Serial.println("vložena karta");
+      Serial.println(RFID_getIDCip());
+
     //  RFID_Write();
-    // }
+    }
+    Serial.println("*********************");
 
     // Serial.println("LORA:");
 
@@ -75,20 +67,42 @@ void loop()
 
 #if CLEAR_DATA
 
+  RFID_WaitToChip();
+
   RFID_OnlyRead();
 
   RFID_ClearAllData();
 
-  feedback(OK);
+  if(!RFID_CheckNullData())
+  {
+    Serial.println("OK");
+    feedback(OK);
+  }
+  else{
+    Serial.println("NOK");
+    feedback(ERROR);
+  }
+delay(2000);
+  
 #endif
 
 #if JEN_CTENI // tabulkový výpis
+  RFID_WaitToChip();
   RFID_OnlyRead();
 #endif
 
 #if ZAPIS_ID_CIPU
-  RFID_zapisID();
-  feedback(OK);
+  LedOn();
+  int valueW = RFID_zapisID();
+  int valueR = RFID_getIDCip();
+  Serial.println(valueR);
+  if(valueW == valueR)
+  {
+    feedback(OK);
+  }
+  else{
+    feedback(ERROR);
+  }
 #endif
 
 #if JEN_MERENI
@@ -104,10 +118,13 @@ void loop()
     LedOn();
     delay(1000);
     feedback(OK);
+    delay(1000);
+    feedback(ERROR);
   }
 #endif
 
 #if JEN_SPANEK
+  Serial.println("loop");
   LedOn();
   delay(5000);
   LedOff();

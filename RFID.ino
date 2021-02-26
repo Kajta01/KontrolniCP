@@ -10,11 +10,6 @@ byte writeblock[16] = NullDataS;
 
 int blockID = 1;
 
-/**
- * Initialize.
- */
-
-
 void RFID_Write()
 {
   ZapisDat();
@@ -23,23 +18,6 @@ void RFID_Write()
   // Stop encryption on PCD
   mfrc522.PCD_StopCrypto1();
 }
-
-
-
-// int WriteRow(int row, int ID, String time)
-// {
-//   char Buffer[3];
-//   sprintf(Buffer, "%02d,", ID);
-//   Serial.println(Buffer + time);
-
-//   Serial.println("zapis");
-//   String message = Buffer + time;
-//   byte plain[message.length()];
-//   message.getBytes(plain, message.length());
-//   writeBlock(radek, plain);
-//   //OKDONE(3000);
-//   return 1;
-// }
 
 // void WriteRow(int radek, int ID, String time)
 // {
@@ -61,7 +39,7 @@ void RFID_Write()
 
 void ZapisDat()
 {
-  // attachInterrupt(0,wakeUpW, LOW);
+
   if (!RFIDTest())
   {
     return;
@@ -88,7 +66,7 @@ void ZapisDat()
 
       if (temp == NullDataS)
       {
-      //  WriteRow(i, 10, "10:20");
+        //  WriteRow(i, 10, "10:20");
         // detachInterrupt(0);
         return;
       }
@@ -120,18 +98,85 @@ void ZapisDat()
   }
 }
 
+int RFID_getIDCip()
+{
+  RFID_init();
+  if (!RFIDTest())
+  {
+    return;
+  }
+  readBlock(blockID, readbackblock); //read the block back
+  int vysledek = (readbackblock[0] << 8) + readbackblock[1];
+  Serial.println(" ");
+  return (int)vysledek;
+}
+/******************************************************************
+ *                 OSTATNI
+ * ****************************************************************/
+  void RFID_WaitToChip()
+  {
+  do
+  {
+    LedOn();
+    delay(50);
+    LedOff();
+  } while (!RFIDTest());
+  }
 
 
+
+
+// tabulkový výpis
+void RFID_OnlyRead() // ookk
+{
+  RFID_init();
+  if (!RFIDTest())
+  {
+    return;
+  }
+
+  // Dump debug info about the card; PICC_HaltA() is automatically called
+  mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
+}
+
+int RFID_zapisID() // ookk
+{
+  memset(writeblock, 0, sizeof(writeblock));
+  Serial.println("ID (max 65535):");
+  while (Serial.available() == 0)
+  {
+  }
+  int readValue = Serial.readString().toInt();
+
+  Serial.println("B:");
+  Serial.println(readValue);
+
+  writeblock[0] = (byte)(readValue >> 8) & 0xFF; // high byte (0x12)
+  writeblock[1] = (byte)readValue & 0xFF;        // low byte  (0x34)
+
+  Serial.println(";");
+  Serial.println("...pokus o zápis...");
+  
+  RFID_WaitToChip();
+
+
+  /*****************************************writing and reading a block on the card**********************************************************************/
+
+  writeBlock(blockID, writeblock); //the blockcontent array is written into the card block
+  Serial.println("zapsáno");
+  return readValue;
+}
 
 void RFID_ClearAllData()
 {
   RFID_init();
-    if (!RFIDTest()){
+  if (!RFIDTest())
+  {
     return;
   }
-  memset(writeblock, 0, sizeof(writeblock)); 
+  memset(writeblock, 0, sizeof(writeblock));
 
-  for (int i = 1; i < 64; i++)
+  for (int i = 4; i < 64; i++)
   {
     Serial.println(i);
 
@@ -150,60 +195,41 @@ void RFID_ClearAllData()
   }
 }
 
-/******************************************************************
- *                 OSTATNI
- * ****************************************************************/
-// tabulkový výpis
-void RFID_OnlyRead() // ookk
+bool RFID_CheckNullData()
 {
   RFID_init();
-    if (!RFIDTest()){ return; }
+  if (!RFIDTest())
+  {
+    return 1;
+  }
+  for (int i = 4; i < 64; i++)
+  {
+    Serial.println(i);
 
-  // Dump debug info about the card; PICC_HaltA() is automatically called
-  mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
+    switch (readBlock(i, readbackblock))
+    {
+    case 10: // vyčtené data
+      String temp = (String((char *)readbackblock)).substring(0, 16);
+      Serial.println(temp);
+      if (temp != "")
+      {
+        return 1; //Error
+      }
+      break;
+    case 0:
+      break;
+    case 2:
+      break;
+    default:
+      mfrc522.PICC_IsNewCardPresent();
+      mfrc522.PICC_ReadCardSerial(); //if PICC_ReadCardSerial returns 1, the "uid" struct (see MFRC522.h lines 238-45)) contains the ID of the read card.
+      i--;
+      break;
+    }
+  }
+  return 0; //ok
 }
 
-void RFID_zapisID() // ookk
-{
-    Serial.println("Format: 10 = 0010");
-    Serial.println("ID:");
-    while (Serial.available() == 0)
-    {
-    }
-    String ss = (String)Serial.readString();
-    memset(writeblock, 0, sizeof(writeblock));
-
-    //Serial.println(ss.substring(0, 4));
-    writeblock[0] = ss[0];
-    writeblock[1] = ss[1];
-    writeblock[2] = ss[2];
-    writeblock[3] = ss[3];
-    for (int j = 0; j < 4; j++) //print the block contents
-    {
-        Serial.println(j + " - ");
-        Serial.write(writeblock[j]); //Serial.write() transmits the ASCII numbers as human readable characters to serial monitor
-    }
-    Serial.println(";");
-    Serial.println("...pokus o zápis...");
-    RFID_init();
-    do{
-        delay(100);
-    }while(!RFIDTest());
-
-    /*****************************************writing and reading a block on the card**********************************************************************/
-
-    writeBlock(blockID, writeblock); //the blockcontent array is written into the card block
-    Serial.println("zapsáno");
-
-    readBlock(blockID, readbackblock); //read the block back
-    Serial.print("read block: ");
-    for (int j = 0; j < 16; j++) //print the block contents
-    {
-        Serial.write(readbackblock[j]); //Serial.write() transmits the ASCII numbers as human readable characters to serial monitor
-    }
-    Serial.println("");
-    Serial.println("______________________________________________________");
-}
 /******************************************************************
  *                 PROVOZNI
  * ****************************************************************/
