@@ -30,43 +30,38 @@ void feedback(feedbackStatus status)
       digitalWrite(LED2, LOW);
       break;
    case ERROR:
-      digitalWrite(LED2, HIGH);
-      tone(BUZZER, 2000, 500);
-      delay(500);
-      tone(BUZZER, 1000, 500);
-      delay(500);
-      tone(BUZZER, 2000, 50);
-      delay(500);
-      digitalWrite(LED2, LOW);
+      for (int i = 0; i < 3; i++)
+      {
+         digitalWrite(LED2, HIGH);
+         digitalWrite(BUZZER, HIGH);
+         delay(500);
+         digitalWrite(LED2, LOW);
+         digitalWrite(BUZZER, LOW);
+         delay(100);
+      }
       break;
    }
    digitalWrite(LED1, LOW);
 }
 
-float ReadAnalogVoltage(){
-    return (analogRead(BATTERY_PIN)*(3.3/1023.00));
+float ReadAnalogVoltage()
+{
+   return (analogRead(BATTERY_PIN) * (3.3 / 1023.00));
 }
-
-
-
 
 void GoingToSleep()
 {
-  sleep_enable();
-  attachInterrupt(0 ,wakeUp, HIGH);
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  //digitalWrite(led,LOW);
-  delay(1000);
-  sleep_cpu();
-  Serial.println("just woke");
-  LedOn();
+   sleep_enable();
+   attachInterrupt(0, wakeUp, HIGH);
+   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+   delay(1000);
+   sleep_cpu();
 }
-void(* resetFunc) (void) = 0;
+void (*resetFunc)(void) = 0;
 
 void wakeUp()
 {
-    Serial.println("Fired!");
-    sleep_disable();
-    detachInterrupt(0);
-    resetFunc();
+   Serial.println("Fired!");
+   sleep_disable();
+   detachInterrupt(0);
 }
