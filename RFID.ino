@@ -15,11 +15,12 @@ const int EndRow = 64;
 
 
 
-int RFID_FreeRow()  //ok 03_03
+int RFID_FreeRow()  //ok 03_03 ErrorCnt
 {
 
   for (int i = StartRow; i < EndRow; i++)
   {
+    ErrorHdlCheck();
     Serial.println();
     Serial.println(i);
     switch (readBlock(i, readbackblock))
@@ -29,12 +30,16 @@ int RFID_FreeRow()  //ok 03_03
       mfrc522.PICC_IsNewCardPresent();
       mfrc522.PICC_ReadCardSerial(); //if PICC_ReadCardSerial returns 1, the "uid" struct (see MFRC522.h lines 238-45)) contains the ID of the read card.
       i--;
+      ErrorHdlAdd();
       break;
+    
 
     case 1: //trailer
       break;
 
     case 0: //ok -  ověření volného řádku;
+      ErrorHdlNull();
+
       String data = (String((char *)readbackblock)).substring(0, 16);
 
       Serial.println(data);
@@ -49,6 +54,7 @@ int RFID_FreeRow()  //ok 03_03
       break;
     }
   }
+ 
   //plna pamet
   feedback(FULL_MEMORY);
 }
@@ -103,6 +109,7 @@ int RFID_checkRowVal(int row)
        return 1;
     }
 }
+
 void RFID_getRowValues(){
   for(int i = StartRow; i < EndRow; i++)
   {
