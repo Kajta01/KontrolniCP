@@ -8,94 +8,138 @@ MFRC522::MIFARE_Key key;
 byte readbackblock[18];
 byte writeblock[16] = NullDataS;
 
-int blockID = 1;
+const int blockID = 1;
 
-void RFID_Write()
-{
-  ZapisDat();
-  // Halt PICC
-  mfrc522.PICC_HaltA();
-  // Stop encryption on PCD
-  mfrc522.PCD_StopCrypto1();
-}
+const int StartRow = 4;
+const int EndRow = 64;
 
-// void WriteRow(int radek, int ID, String time)
-// {
-//   char Buffer[3];
-//   sprintf(Buffer, "%02d-", ID);
-//   Serial.println(Buffer + time);
 
-//   Serial.println("zapis");
-//   String message = Buffer + time;
-// byte plain[message.length()];
-// message.getBytes(plain, message.length());
-// writeBlock(radek, plain);
-// tone(bzucak,2000,1000);
-//    digitalWrite(led2, HIGH);
-//    delay(1000);
-//    digitalWrite(led2, LOW);
 
-// }
-
-void ZapisDat()
+int RFID_FreeRow()  //ok 03_03
 {
 
-  if (!RFIDTest())
-  {
-    return;
-  }
-  for (int i = 62; i > 3; i--)
+  for (int i = StartRow; i < EndRow; i++)
   {
     Serial.println();
     Serial.println(i);
     switch (readBlock(i, readbackblock))
     {
-    case 1:
+    case 2: //error auth, read/write
+    case 3:
       mfrc522.PICC_IsNewCardPresent();
       mfrc522.PICC_ReadCardSerial(); //if PICC_ReadCardSerial returns 1, the "uid" struct (see MFRC522.h lines 238-45)) contains the ID of the read card.
-
-      i++;
+      i--;
       break;
-    case 5: //trailer
 
+    case 1: //trailer
       break;
-    case 10: // ověření volného řádku;
-      String temp = (String((char *)readbackblock)).substring(0, 16);
-      Serial.println(temp);
-      Serial.println(String(String(temp[0]) + String(temp[1])));
 
-      if (temp == NullDataS)
-      {
-        //  WriteRow(i, 10, "10:20");
-        // detachInterrupt(0);
-        return;
+    case 0: //ok -  ověření volného řádku;
+      String data = (String((char *)readbackblock)).substring(0, 16);
+
+      Serial.println(data);
+
+      if(data == ""){ // Data s null
+         Serial.println("Data is null");
+         return i;
+      } 
+      else{
+        Serial.println("Full");
       }
-      /*  else if(String(String(String(temp[0])+String(temp[1])).toInt())==String(String(ZjistiID()).toInt()))
-        {
-          
-            Serial.println("aa");
-            i--;
-            if (i > 2 && (i+1)%4 == 0)
-            {
-              Serial.println("aaa");
-              i--;
-              }
-            
-            WriteRow(i, ID, getTime());
-            OKDONE(2500);
-            detachInterrupt(0);
-            return; 
-                           
-         }   */
       break;
     }
   }
   //plna pamet
-  int f = 3000;
-  for (int i = 0; i < 5; i++)
+  feedback(FULL_MEMORY);
+}
+
+int RFID_NewEntry(int row, byte ID, byte Day, byte Hour, byte Minute, byte Second)
+{
+  RFID_WriteRow(row,ID,Day,Hour,Minute,Second);
+
+  return RFID_checkRowVal(row);
+
+    // Halt PICC
+//  mfrc522.PICC_HaltA();
+  // Stop encryption on PCD
+//  mfrc522.PCD_StopCrypto1();
+}
+
+
+void RFID_WriteRow(int radek, byte ID, byte Day, byte Hour, byte Minute, byte Second)
+{
+  int checkSum =  ID + Day + Hour + Minute + Second;
+  Serial.println(checkSum);
+  memset(writeblock, 0, sizeof(writeblock));
+  writeblock[0] = ID;
+  writeblock[1] = Day;
+  writeblock[2] = Hour;
+  writeblock[3] = Minute;
+  writeblock[4] = Second;
+
+  writeblock[7] = checkSum;
+  Serial.println((char*)writeblock);
+
+  writeBlock(radek, writeblock);
+  
+}
+int RFID_checkRowVal(int row)
+{
+    Serial.print("Read row");
+    Serial.println(row);
+    
+    readBlock(row, readbackblock); 
+    
+    int checkSum = 0;
+    for(int i = 0; i<5; i++){
+        checkSum += readbackblock[i];
+    }
+    if(checkSum == readbackblock[7])
+    {
+      Serial.println("checkSum id OK");
+      return 0;
+    } else {
+       Serial.println("checkSum id NOok");
+       return 1;
+    }
+}
+void RFID_getRowValues(){
+  for(int i = StartRow; i < EndRow; i++)
   {
-    // OKDONE(f);
+    RFID_getRowVal(i);
   }
+}
+void RFID_getRowVal(int row)
+{
+    Serial.print("Read row");
+    Serial.println(row);
+    
+    readBlock(row, readbackblock); 
+    
+    Serial.print("ID: ");
+    Serial.print(readbackblock[0]);
+    Serial.print(", day: ");
+    Serial.print(readbackblock[1]);
+    Serial.print(", hour: ");
+    Serial.print(readbackblock[2]);
+    Serial.print(", minute: ");
+    Serial.print(readbackblock[3]);
+    Serial.print(", second: ");
+    Serial.print(readbackblock[4]);
+    Serial.print(", checkSum: ");
+    Serial.print(readbackblock[7]);
+    Serial.println("");
+
+    int checkSum = 0;
+    for(int i = 0; i<5; i++){
+        checkSum += readbackblock[i];
+    }
+    if(checkSum == readbackblock[7])
+    {
+      Serial.println("checkSum id OK");
+    } else {
+       Serial.println("checkSum id NOok");
+    }
 }
 
 int RFID_getIDCip()
@@ -107,24 +151,12 @@ int RFID_getIDCip()
   }
   readBlock(blockID, readbackblock); //read the block back
   int vysledek = (readbackblock[0] << 8) + readbackblock[1];
-  Serial.println(" ");
   return (int)vysledek;
 }
+
 /******************************************************************
  *                 OSTATNI
  * ****************************************************************/
-  void RFID_WaitToChip()
-  {
-  do
-  {
-    LedOn();
-    delay(50);
-    LedOff();
-  } while (!RFIDTest());
-  }
-
-
-
 
 // tabulkový výpis
 void RFID_OnlyRead() // ookk
@@ -233,6 +265,17 @@ bool RFID_CheckNullData()
 /******************************************************************
  *                 PROVOZNI
  * ****************************************************************/
+void RFID_WaitToChip()
+  {
+    RFID_init();
+    do
+    {
+      LedOn();
+      delay(50);
+      LedOff();
+    } while (!RFIDTest());
+  }
+
 void RFID_init()
 {
   mfrc522.PCD_Init(); // Init MFRC522 card
@@ -265,7 +308,7 @@ int readBlock(int blockNumber, byte arrayAddress[])
   {
     Serial.print(blockNumber);
     Serial.println(" is a trailer block:");
-    return 5;
+    return 1; // trailer
   }
 
   Serial.println("read");
@@ -277,7 +320,7 @@ int readBlock(int blockNumber, byte arrayAddress[])
   if (status != MFRC522::STATUS_OK)
   {
     Serial.print("PCD_Authenticate() failed (read): ");
-    return 1; //return "1" as error message
+    return 2; //error aut 
   }
 
   byte buffersize = 18;                                                 //we need to define a variable with the read buffer size, since the MIFARE_Read method below needs a pointer to the variable that contains the size...
@@ -285,10 +328,10 @@ int readBlock(int blockNumber, byte arrayAddress[])
   if (status != MFRC522::STATUS_OK)
   {
     Serial.print("MIFARE_read() failed: ");
-    return 1; //return "2" as error message
+    return 3; // read error
   }
   Serial.println("block was read");
-  return 10;
+  return 0; // ok
 }
 
 int writeBlock(int blockNumber, byte arrayAddress[])
@@ -299,7 +342,7 @@ int writeBlock(int blockNumber, byte arrayAddress[])
   {
     Serial.print(blockNumber);
     Serial.println(" is a trailer block:");
-    return 2;
+    return 1; // trailer
   } //block number is a trailer block (modulo 4); quit and send error code 2
   Serial.print(blockNumber);
   Serial.println(" is a data block:");
@@ -310,7 +353,7 @@ int writeBlock(int blockNumber, byte arrayAddress[])
   if (status != MFRC522::STATUS_OK)
   {
     Serial.print("PCD_Authenticate() failed: ");
-    return 3; //return "3" as error message
+    return 2; //error aut 
   }
 
   /*****************************************writing the block***********************************************************/
@@ -320,8 +363,14 @@ int writeBlock(int blockNumber, byte arrayAddress[])
   if (status != MFRC522::STATUS_OK)
   {
     Serial.print("MIFARE_Write() failed: ");
-    return 4; //return "4" as error message
+    return 3; //error write
   }
   Serial.println("block was written");
-  return 0;
+  return 0; // ok
 }
+
+
+// 0 - OK
+// 1 - trailer
+// 2 - F auten
+// 3 - F write/read
