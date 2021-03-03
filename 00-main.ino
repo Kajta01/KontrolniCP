@@ -5,7 +5,8 @@
 enum feedbackStatus
 {
   OK,
-  ERROR
+  ERROR,
+  FULL_MEMORY
 };
 
 void setup()
@@ -16,7 +17,10 @@ void setup()
 
   SPI.begin();
 
-  #if STANOVISTE
+   RTC_Start();
+  RTC_SetActualTime();
+
+#if STANOVISTE
 
    // Init SPI bus
   RTC_Start();
@@ -26,10 +30,31 @@ void setup()
   // LORA_setup();
 
 #endif
+#if JEN_WTD
+  WDT_setup();
+#endif
 }
 void loop()
 {
-   RFID_init();
+#if RFID_GET_ROW_VALUES
+RFID_WaitToChip();
+RFID_getRowValues();
+#endif
+
+#if RFID_NEW_ENTRY
+RFID_WaitToChip();
+
+RTC_ReadDateTime();
+
+int r = RFID_NewEntry(RFID_FreeRow(), getIDDevice(), 
+              RTC_GetDay(), RTC_GetHour(),RTC_GetMinute(), RTC_GetSecond());
+
+delay(1000);
+feedback(r);
+
+
+#endif
+
 
 #if STANOVISTE
 
@@ -38,22 +63,30 @@ void loop()
     LedOn();
 
     Serial.println("------------------------");
+
+    Serial.print("Device:");
+    Serial.println(ID_DEVICE);
+
     Serial.print("Voltage:");
     Serial.println(ReadAnalogVoltage() * 2);
 
     Serial.println("RTC:");
     Serial.println(RTC_GetTemperature());
-    Serial.println(RTC_ReadDateTime());
+    RTC_ReadDateTime();
+
+   Serial.println(RTC_GetTime());
+  Serial.println(RTC_GetDay());
+  Serial.println(RTC_GetHour());
+  Serial.println(RTC_GetMinute());
+  Serial.println(RTC_GetSecond());
 
     Serial.println("RFID:");
 
-    if (RFIDTest())
-    {
+    RFID_WaitToChip();
+
       Serial.println("vložena karta");
       Serial.println(RFID_getIDCip());
 
-    //  RFID_Write();
-    }
     Serial.println("*********************");
 
     // Serial.println("LORA:");
@@ -130,5 +163,11 @@ delay(2000);
   LedOff();
   GoingToSleep();
 #endif
+
+#if JEN_WTD
+  feedback(OK);
+  WDT_loop();
+#endif
+
   delay(1000);
 }
