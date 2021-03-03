@@ -25,7 +25,7 @@ void feedback(feedbackStatus status)
    case OK:
       digitalWrite(LED2, HIGH);
       digitalWrite(BUZZER, HIGH);
-      delay(1000);
+      delay(200);
       digitalWrite(BUZZER, LOW);
       digitalWrite(LED2, LOW);
       break;
@@ -40,8 +40,24 @@ void feedback(feedbackStatus status)
          delay(100);
       }
       break;
+   case FULL_MEMORY:
+         for (int i = 0; i < 4; i++)
+      {
+         digitalWrite(LED2, HIGH);
+         digitalWrite(BUZZER, HIGH);
+         delay(100);
+         digitalWrite(LED2, LOW);
+         digitalWrite(BUZZER, LOW);
+         delay(100);
+      }
+      break;
+
    }
    digitalWrite(LED1, LOW);
+}
+
+int getIDDevice(){
+   return (int)ID_DEVICE;
 }
 
 float ReadAnalogVoltage()
