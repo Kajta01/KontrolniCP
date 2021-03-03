@@ -3,31 +3,54 @@
 #include "RTClib.h"
 RTC_DS3231 rtc;
 DateTime now;
-char timeBuffer[11];
 
-void RTC_Start(){ 
+void RTC_Start()
+{
     rtc.begin();
-   
 }
 
-void RTC_SetTime(const char * date, const char *time){
-     rtc.adjust(DateTime((date), (time)));
+void RTC_SetTime(const char *date, const char *time)
+{
+    rtc.adjust(DateTime((date), (time)));
 }
-void RTC_SetActualTime(){
-     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+void RTC_SetActualTime()
+{
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 }
 
-float RTC_GetTemperature(){
+float RTC_GetTemperature()
+{
     return rtc.getTemperature();
 }
 
-String RTC_ReadDateTime(){
+void RTC_ReadActualDateTime()
+{
     now = rtc.now();
-    sprintf(timeBuffer, "%02d-%02d:%02d:%02d", now.day(), now.hour(), now.minute(), now.second());
-    return timeBuffer;
-
 }
 
+int RTC_GetDay()
+{
+    return now.day();
+}
 
+int RTC_GetHour()
+{
+    return now.hour();
+}
 
+int RTC_GetMinute()
+{
+    return now.minute();
+}
 
+int RTC_GetSecond()
+{
+    return now.second();
+}
+
+String RTC_GetTime()
+{
+    char timeBuffer[11];
+    sprintf(timeBuffer, "%02d-%02d:%02d:%02d", now.day(), now.hour(), now.minute(), now.second());
+    return timeBuffer;
+}
