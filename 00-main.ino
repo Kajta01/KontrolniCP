@@ -17,28 +17,28 @@ void setup()
 
   SPI.begin();
 
-   RTC_Start();
-  RTC_SetActualTime();
-
-#if STANOVISTE
-
-   // Init SPI bus
   RTC_Start();
   RTC_SetActualTime();
 
 
-  // LORA_setup();
+#if JEN_LORA
+  LORA_setup();
+#endif 
 
-#endif
 #if JEN_WTD
+  delay(1000);
   WDT_setup();
 #endif
 }
 void loop()
 {
+#if TEMP
+  RFID_WaitToChip();
+  RFID_FreeRow();
+#endif
 #if RFID_GET_ROW_VALUES
-RFID_WaitToChip();
-RFID_getRowValues();
+  RFID_WaitToChip();
+  RFID_getRowValues();
 #endif
 
 #if RFID_NEW_ENTRY
@@ -120,6 +120,7 @@ delay(2000);
 #endif
 
 #if JEN_CTENI // tabulkový výpis
+
   RFID_WaitToChip();
   RFID_OnlyRead();
 #endif
@@ -167,6 +168,14 @@ delay(2000);
 #if JEN_WTD
   feedback(OK);
   WDT_loop();
+#endif
+
+#if JEN_LORA
+if (digitalRead(BUTTON) == 1)
+  {
+  LORA_loop();
+   feedback(OK);
+  }
 #endif
 
   delay(1000);

@@ -46,11 +46,7 @@ const char *devAddr = LORA_DEV_ADDR;
 const char *nwkSKey = LORA_NWKS_KEY;
 const char *appSKey = LORA_APPS_KEY;
 
-SoftwareSerial mySerial(6,7); // RX, TX
-#define ResetPin 4
-
-//SoftwareSerial mySerial(4,5); // RX, TX
-//#define ResetPin 3
+SoftwareSerial mySerial(LORA_RX,LORA_TX); // RX, TX
 
 
 //create an instance of the rn2xx3 library,
@@ -107,70 +103,21 @@ void initialize_radio()
 
   //configure your keys and join the network
   Serial.println("Trying to join TTN");
-  bool join_result = false;
+
+  bool join_result = myLora.initABP(devAddr, appSKey, nwkSKey);
 
 
-  /*
-   * ABP: initABP(String addr, String AppSKey, String NwkSKey);
-   * Paste the example code from the TTN console here:
-   */
-
-
-  join_result = myLora.initABP(devAddr, appSKey, nwkSKey);
-
-  /*
-   * OTAA: initOTAA(String AppEUI, String AppKey);
-   * If you are using OTAA, paste the example code from the TTN console here:
-   */
-  //const char *appEui = "70B3D57ED00001A6";
-  //const char *appKey = "A23C96EE13804963F8C2BD6285448198";
-
-  //join_result = myLora.initOTAA(appEui, appKey);
-
-
- /* while(!join_result)
-  {
-    Serial.println("Unable to join. Are your keys correct, and do you have TTN coverage?");
-    delay(60000); //delay a minute before retry
-    join_result = myLora.init();
-  }*/
   Serial.println("Successfully joined ?");
  
-
 }
 
 // the loop routine runs over and over again forever:
 void LORA_loop()
 {
  
-
     Serial.print("TXing");
     myLora.tx(String(ID_DEVICE)); //one byte, blocking function
 
-    // switch(myLora.txCnf("!!")) //one byte, blocking function
-    // {
-    //   case TX_FAIL:
-    //   {
-    //     Serial.println("TX unsuccessful or not acknowledged");
-    //     break;
-    //   }
-    //   case TX_SUCCESS:
-    //   {
-    //     Serial.println("TX successful and acknowledged");
-    //     break;
-    //   }
-    //   case TX_WITH_RX:
-    //   {
-    //     String received = myLora.getRx();
-    //     received = myLora.base16decode(received);
-    //     Serial.print("Received downlink: " + received);
-    //     break;
-    //   }
-    //   default:
-    //   {
-    //     Serial.println("Unknown response from TX function");
-    //   }
-    // }
 
     delay(1000);
 }
