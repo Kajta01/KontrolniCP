@@ -40,14 +40,11 @@
 #include <rn2xx3.h>
 #include <SoftwareSerial.h>
 
-
-
 const char *devAddr = LORA_DEV_ADDR;
 const char *nwkSKey = LORA_NWKS_KEY;
 const char *appSKey = LORA_APPS_KEY;
 
-SoftwareSerial mySerial(LORA_RX,LORA_TX); // RX, TX
-
+SoftwareSerial mySerial(LORA_RX, LORA_TX); // RX, TX
 
 //create an instance of the rn2xx3 library,
 //giving the software serial as port to use
@@ -56,7 +53,6 @@ rn2xx3 myLora(mySerial);
 // the setup routine runs once when you press reset:
 void LORA_setup()
 {
-
 
   // Open serial communications and wait for port to open:
   mySerial.begin(9600); //serial port to radio
@@ -67,7 +63,7 @@ void LORA_setup()
   //transmit a startup message
   myLora.tx("TTN Mapper on TTN Enschede node");
 
-  delay(2000);
+  delay(1000);
 }
 
 void initialize_radio()
@@ -86,12 +82,12 @@ void initialize_radio()
 
   //check communication with radio
   String hweui = myLora.hweui();
-  while(hweui.length() != 16)
+  while (hweui.length() != 16)
   {
     Serial.println("Communication with RN2xx3 unsuccessful. Power cycle the board.");
     Serial.println(hweui);
     delay(10000);
-    
+
     hweui = myLora.hweui();
   }
 
@@ -106,19 +102,44 @@ void initialize_radio()
 
   bool join_result = myLora.initABP(devAddr, appSKey, nwkSKey);
 
-
   Serial.println("Successfully joined ?");
- 
 }
 
 // the loop routine runs over and over again forever:
-void LORA_loop()
+void LORA_Send()
 {
- 
-    Serial.print("TXing");
-    myLora.tx(String(ID_DEVICE)); //one byte, blocking function
 
+  Serial.print("TXing");
+  //myLora.tx(String(ID_DEVICE)); //one byte, blocking function
+  byte writeLora[10] = {0x0};
+  memset(writeLora, 0, sizeof(writeLora));
+  writeLora[0] = ID_DEVICE;
+  writeLora[1] = 4;
+  writeLora[2] = 9;
+  writeLora[3] = 31;
+  writeLora[4] = 55;
 
-    delay(1000);
+  myLora.txBytes(writeLora, sizeof(writeLora));
+
+  delay(1000);
+    
 }
+void LORA_Send(byte ID_Device, byte ID_TAG, byte Hour, byte Minute, byte Second, float Battery, float Temperature  )
+{
 
+  Serial.print("TXing");
+  //myLora.tx(String(ID_DEVICE)); //one byte, blocking function
+  byte writeLora[7] = {0x0};
+  memset(writeLora, 0, sizeof(writeLora));
+  writeLora[0] = ID_Device;
+  writeLora[1] = ID_TAG;
+  writeLora[2] = Hour;
+  writeLora[3] = Minute;
+  writeLora[4] = Second;
+  writeLora[5] = Battery*10;
+  writeLora[6] = Temperature*10;
+
+  myLora.txBytes(writeLora, sizeof(writeLora));
+
+  delay(1000);
+}

@@ -20,10 +20,9 @@ void setup()
   RTC_Start();
   RTC_SetActualTime();
 
-
 #if JEN_LORA
   LORA_setup();
-#endif 
+#endif
 
 #if JEN_WTD
   delay(1000);
@@ -42,19 +41,17 @@ void loop()
 #endif
 
 #if RFID_NEW_ENTRY
-RFID_WaitToChip();
+  RFID_WaitToChip();
 
-RTC_ReadDateTime();
+  RTC_ReadDateTime();
 
-int r = RFID_NewEntry(RFID_FreeRow(), getIDDevice(), 
-              RTC_GetDay(), RTC_GetHour(),RTC_GetMinute(), RTC_GetSecond());
+  int r = RFID_NewEntry(RFID_FreeRow(), getIDDevice(),
+                        RTC_GetDay(), RTC_GetHour(), RTC_GetMinute(), RTC_GetSecond());
 
-delay(1000);
-feedback(r);
-
+  delay(1000);
+  feedback(r);
 
 #endif
-
 
 #if STANOVISTE
 
@@ -74,18 +71,18 @@ feedback(r);
     Serial.println(RTC_GetTemperature());
     RTC_ReadDateTime();
 
-   Serial.println(RTC_GetTime());
-  Serial.println(RTC_GetDay());
-  Serial.println(RTC_GetHour());
-  Serial.println(RTC_GetMinute());
-  Serial.println(RTC_GetSecond());
+    Serial.println(RTC_GetTime());
+    Serial.println(RTC_GetDay());
+    Serial.println(RTC_GetHour());
+    Serial.println(RTC_GetMinute());
+    Serial.println(RTC_GetSecond());
 
     Serial.println("RFID:");
 
     RFID_WaitToChip();
 
-      Serial.println("vložena karta");
-      Serial.println(RFID_getIDCip());
+    Serial.println("vložena karta");
+    Serial.println(RFID_getIDCip());
 
     Serial.println("*********************");
 
@@ -106,17 +103,18 @@ feedback(r);
 
   RFID_ClearAllData();
 
-  if(!RFID_CheckNullData())
+  if (!RFID_CheckNullData())
   {
     Serial.println("OK");
     feedback(OK);
   }
-  else{
+  else
+  {
     Serial.println("NOK");
     feedback(ERROR);
   }
-delay(2000);
-  
+  delay(2000);
+
 #endif
 
 #if JEN_CTENI // tabulkový výpis
@@ -130,11 +128,12 @@ delay(2000);
   int valueW = RFID_zapisID();
   int valueR = RFID_getIDCip();
   Serial.println(valueR);
-  if(valueW == valueR)
+  if (valueW == valueR)
   {
     feedback(OK);
   }
-  else{
+  else
+  {
     feedback(ERROR);
   }
 #endif
@@ -171,10 +170,18 @@ delay(2000);
 #endif
 
 #if JEN_LORA
-if (digitalRead(BUTTON) == 1)
+  if (digitalRead(BUTTON) == 1)
   {
-  LORA_loop();
-   feedback(OK);
+   // LORA_Send();
+   
+    //LORA_Send(10,100,9,51,33,3.51,23.23);
+
+    RTC_ReadActualDateTime();
+    LORA_Send(getIDDevice(),100,RTC_GetHour(),RTC_GetMinute(),RTC_GetSecond(),
+    ReadAnalogVoltage() * 2,RTC_GetTemperature());
+
+
+    feedback(OK);
   }
 #endif
 
