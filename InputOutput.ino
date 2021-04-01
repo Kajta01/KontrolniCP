@@ -7,6 +7,7 @@ void IO_Setup()
    pinMode(LED1, OUTPUT);
    pinMode(LED2, OUTPUT);
    pinMode(BUZZER, OUTPUT);
+   pinMode(LORA_RESET, OUTPUT);
 }
 
 void LedOn()
@@ -17,6 +18,14 @@ void LedOff()
 {
    digitalWrite(LED1, LOW);
 }
+void LedBlueOn()
+{
+   digitalWrite(LED2, HIGH);
+}
+void LedBlueOff()
+{
+   digitalWrite(LED2, LOW);
+}
 
 void feedback(feedbackStatus status)
 {
@@ -25,7 +34,7 @@ void feedback(feedbackStatus status)
    case OK:
       digitalWrite(LED2, HIGH);
       digitalWrite(BUZZER, HIGH);
-      delay(200);
+      delay(100);
       digitalWrite(BUZZER, LOW);
       digitalWrite(LED2, LOW);
       break;
@@ -53,7 +62,7 @@ void feedback(feedbackStatus status)
       break;
 
    }
-   digitalWrite(LED1, LOW);
+   LedOff();
 }
 
 int getIDDevice(){
@@ -67,17 +76,40 @@ float ReadAnalogVoltage()
 
 void GoingToSleep()
 {
+#if DEBUG
+Serial.println("Go sleep");
+delay(2000);
+#endif   
+   WTG_disable();
+   
+   
+  // LORA_Sleep();
+   
+   EIFR = (1 << INTF0); //Write 1 to Interrupt Flag 0 to make sure it is reset
    sleep_enable();
    attachInterrupt(0, wakeUp, HIGH);
    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-   delay(1000);
+   delay(100);
    sleep_cpu();
+
 }
 void (*resetFunc)(void) = 0;
 
 void wakeUp()
 {
-   Serial.println("Fired!");
-   sleep_disable();
    detachInterrupt(0);
+#if STANOVISTE_WTG
+   WTG_enable();
+   WTG_reset();
+#endif
+#if DEBUG
+   Serial.println("Fired!");
+   delay(100);
+#endif 
+   sleep_disable();
+   
+   
+   //resetFunc();
+   //hardwareReset();
+
 }
