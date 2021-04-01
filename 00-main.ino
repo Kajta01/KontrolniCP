@@ -4,21 +4,28 @@
 
 enum feedbackStatus
 {
-  OK,
-  ERROR,
-  FULL_MEMORY
+  OK = 0,
+  ERROR = 1,
+  FULL_MEMORY = 9999
 };
 
 void setup()
 {
-  Serial.begin(9600);
-  Serial.println("Starting");
+  LedBlueOn();
+
   IO_Setup();
 
   SPI.begin();
 
   RTC_Start();
   RTC_SetActualTime();
+#if DEBUG
+  Serial.begin(9600);
+  Serial.println("Starting");
+#endif
+#if CONN_SERIAL
+  Serial.begin(9600);
+#endif
 
 #if JEN_LORA
   LORA_setup();
@@ -28,32 +35,67 @@ void setup()
   delay(1000);
   WDT_setup();
 #endif
+#if STANOVISTE
+  LORA_setup();
+#endif
+#if STANOVISTE_WTG
+  WDT_setup();
+#endif
+
+  LedBlueOff();
 }
 void loop()
 {
-#if TEMP
-  RFID_WaitToChip();
-  RFID_FreeRow();
-#endif
-#if RFID_GET_ROW_VALUES
-  RFID_WaitToChip();
-  RFID_getRowValues();
-#endif
-
-#if RFID_NEW_ENTRY
-  RFID_WaitToChip();
-
-  RTC_ReadDateTime();
-
-  int r = RFID_NewEntry(RFID_FreeRow(), getIDDevice(),
-                        RTC_GetDay(), RTC_GetHour(), RTC_GetMinute(), RTC_GetSecond());
-
-  delay(1000);
-  feedback(r);
-
-#endif
-
 #if STANOVISTE
+  int IDtag = 0;
+  int row = 0;
+  feedbackStatus result;
+#if DEBUG
+  Serial.println("Start loop");
+  delay(100);
+#endif
+
+  WTG_reset();
+  LORA_initialize_radio();
+  if (RFID_WaitToChip(100))
+  {
+    LedOn();
+    WTG_reset();
+    IDtag = RFID_getIDCip();
+    row = RFID_FreeRow();
+    if (row != FULL_MEMORY)
+    {
+      RTC_ReadActualDateTime();
+      result = RFID_NewEntry(row, getIDDevice(), RTC_GetDay(), RTC_GetHour(), RTC_GetMinute(), RTC_GetSecond());
+      RFID_Stop();
+      if (result == OK)
+      {
+
+        WTG_reset();
+
+        LORA_Send(getIDDevice(), IDtag, RTC_GetHour(), RTC_GetMinute(), RTC_GetSecond(),
+                  ReadAnalogVoltage() * 2, RTC_GetTemperature());
+
+        feedback(OK);
+      }
+      else
+      {
+        feedback(ERROR);
+      }
+    }
+    else
+    {
+      feedback(FULL_MEMORY);
+    }
+  }
+  RFID_Stop();
+  LORA_Sleep();
+  WTG_reset();
+  GoingToSleep();
+
+#endif
+
+#if JEN_VYPIS
 
   if (digitalRead(BUTTON) == 1)
   {
@@ -86,35 +128,13 @@ void loop()
 
     Serial.println("*********************");
 
-    // Serial.println("LORA:");
+     Serial.println("LORA:");
 
-    // LORA_loop();
+    LORA_Send(10,100,9,51,33,3.51,23.23);
 
     delay(1000);
     feedback(OK);
   }
-#endif
-
-#if CLEAR_DATA
-
-  RFID_WaitToChip();
-
-  RFID_OnlyRead();
-
-  RFID_ClearAllData();
-
-  if (!RFID_CheckNullData())
-  {
-    Serial.println("OK");
-    feedback(OK);
-  }
-  else
-  {
-    Serial.println("NOK");
-    feedback(ERROR);
-  }
-  delay(2000);
-
 #endif
 
 #if JEN_CTENI // tabulkový výpis
@@ -123,46 +143,6 @@ void loop()
   RFID_OnlyRead();
 #endif
 
-#if ZAPIS_ID_CIPU
-  LedOn();
-  int valueW = RFID_zapisID();
-  int valueR = RFID_getIDCip();
-  Serial.println(valueR);
-  if (valueW == valueR)
-  {
-    feedback(OK);
-  }
-  else
-  {
-    feedback(ERROR);
-  }
-#endif
-
-#if JEN_MERENI
-
-  Serial.print("Voltage:");
-  Serial.println(ReadAnalogVoltage());
-
-#endif
-
-#if JEN_ZVUK_LED
-  if (digitalRead(BUTTON) == 1)
-  {
-    LedOn();
-    delay(1000);
-    feedback(OK);
-    delay(1000);
-    feedback(ERROR);
-  }
-#endif
-
-#if JEN_SPANEK
-  Serial.println("loop");
-  LedOn();
-  delay(5000);
-  LedOff();
-  GoingToSleep();
-#endif
 
 #if JEN_WTD
   feedback(OK);
@@ -172,18 +152,83 @@ void loop()
 #if JEN_LORA
   if (digitalRead(BUTTON) == 1)
   {
-   // LORA_Send();
-   
+    // LORA_Send();
+
     //LORA_Send(10,100,9,51,33,3.51,23.23);
 
     RTC_ReadActualDateTime();
-    LORA_Send(getIDDevice(),100,RTC_GetHour(),RTC_GetMinute(),RTC_GetSecond(),
-    ReadAnalogVoltage() * 2,RTC_GetTemperature());
-
+    LORA_Send(getIDDevice(), 100, RTC_GetHour(), RTC_GetMinute(), RTC_GetSecond(),
+              ReadAnalogVoltage() * 2, RTC_GetTemperature());
 
     feedback(OK);
   }
 #endif
 
-  delay(1000);
+
+#if CONN_SERIAL
+  while (Serial.available() == 0) {}
+  int readValue = Serial.readString().toInt();
+  switch (readValue)
+  {
+  case 1:
+    getRowValue();
+    break;  
+  case 2:
+    clearDataAll();
+    break;
+  case 3:
+    zapisIDcipu();
+    break;
+  case 4:
+    zapisHodinPC();
+    break;
+  
+  default:
+    break;
+  }
+
+# endif
+
+  delay(2000);
+}
+
+void getRowValue(){
+  while(1){
+  RFID_WaitToChip();
+  RFID_getRowValues();
+
+  delay(3000);
+  }
+}
+
+void clearDataAll(){
+  while (1)
+  {
+    RFID_WaitToChip();
+    LedOn();
+    RFID_ClearAllData();
+    bool check = RFID_CheckNullData();
+    feedback((int)check);
+
+    #if DEBUG
+      Serial.println(check);
+    #endif
+    delay(3000);
+  }
+}
+
+void zapisIDcipu(){
+  while(1){
+  LedOn();
+  int valueW = RFID_zapisID();
+  int valueR = RFID_getIDCip();
+  if (valueW == valueR){
+    feedback(OK);
+  } else {
+    feedback(ERROR);
+  }
+  }
+}
+void zapisHodinPC(){
+  // cip FFFF
 }
