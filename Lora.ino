@@ -40,9 +40,7 @@
 #include <rn2xx3.h>
 #include <SoftwareSerial.h>
 
-const char *devAddr = LORA_DEV_ADDR;
-const char *nwkSKey = LORA_NWKS_KEY;
-const char *appSKey = LORA_APPS_KEY;
+
 
 SoftwareSerial mySerial(LORA_RX, LORA_TX); // RX, TX
 
@@ -59,21 +57,26 @@ void LORA_setup()
   Serial.println("Startup");
 
   initialize_radio();
-
   //transmit a startup message
-  myLora.tx("TTN Mapper on TTN Enschede node");
+  myLora.tx("T");
 
-  delay(1000);
+  delay(100);
 }
+void LORA_initialize_radio()
+{
+  //reset rn2483
+  
+  myLora.autobaud();
+  }
 
 void initialize_radio()
 {
   //reset rn2483
-  pinMode(LORA_RESET, OUTPUT);
+  
   digitalWrite(LORA_RESET, LOW);
   delay(500);
   digitalWrite(LORA_RESET, HIGH);
-
+  
   delay(100); //wait for the RN2xx3's startup message
   mySerial.flush();
 
@@ -81,6 +84,7 @@ void initialize_radio()
   myLora.autobaud();
 
   //check communication with radio
+  #if 0//DEBUG
   String hweui = myLora.hweui();
   while (hweui.length() != 16)
   {
@@ -96,20 +100,21 @@ void initialize_radio()
   Serial.println(myLora.hweui());
   Serial.println("RN2xx3 firmware version:");
   Serial.println(myLora.sysver());
-
+#endif
   //configure your keys and join the network
   Serial.println("Trying to join TTN");
 
-  bool join_result = myLora.initABP(devAddr, appSKey, nwkSKey);
+  myLora.initABP((char*)LORA_DEV_ADDR, (char*)LORA_APPS_KEY, (char*)LORA_NWKS_KEY);
 
-  Serial.println("Successfully joined ?");
+
+  Serial.println("Joined");
 }
 
 // the loop routine runs over and over again forever:
 void LORA_Send()
 {
 
-  Serial.print("TXing");
+
   //myLora.tx(String(ID_DEVICE)); //one byte, blocking function
   byte writeLora[10] = {0x0};
   memset(writeLora, 0, sizeof(writeLora));
@@ -126,20 +131,52 @@ void LORA_Send()
 }
 void LORA_Send(byte ID_Device, byte ID_TAG, byte Hour, byte Minute, byte Second, float Battery, float Temperature  )
 {
-
-  Serial.print("TXing");
-  //myLora.tx(String(ID_DEVICE)); //one byte, blocking function
-  byte writeLora[7] = {0x0};
+int checkSum = 0;
+int TemperatureI = (int)((Temperature+273)*10);
+  byte writeLora[10] = {0x0};
   memset(writeLora, 0, sizeof(writeLora));
-  writeLora[0] = ID_Device;
-  writeLora[1] = ID_TAG;
-  writeLora[2] = Hour;
-  writeLora[3] = Minute;
-  writeLora[4] = Second;
-  writeLora[5] = Battery*10;
-  writeLora[6] = Temperature*10;
+  writeLora[0] = 0x11; // send data
+  writeLora[1] = ID_Device;
+  writeLora[2] = (byte)(ID_TAG >> 8) & 0xFF;
+  writeLora[3] = (byte) ID_TAG & 0xFF; 
+  writeLora[4] = Hour;
+  writeLora[5] = Minute;
+  writeLora[6] = Second;
+  writeLora[7] = Battery * 10;
+  writeLora[8] = (byte) (TemperatureI >> 8) & 0xFF;
+  writeLora[9] = (byte) TemperatureI & 0xFF;
 
+
+  for(int i = 0;i< sizeof(writeLora);i++){
+    checkSum += writeLora[i];
+  }
+  Serial.println("tx");
   myLora.txBytes(writeLora, sizeof(writeLora));
 
+    #if DEBUG
+  Serial.println(" ************************************************* ");
+  Serial.println("LORA zápis");
+  Serial.print("IDcip: ");
+  Serial.print(ID_TAG);
+  Serial.print(" IDdev: ");
+  Serial.print(ID_Device);
+  Serial.print(", hour: ");
+  Serial.print(Hour);
+  Serial.print(", minute: ");
+  Serial.print(Minute);
+  Serial.print(", second: ");
+  Serial.print(Second);
+  Serial.print(", Temperature: ");
+  Serial.print(Temperature);
+  Serial.print(", Battery: ");
+  Serial.print(Battery);
+  Serial.print(", checkSum: ");
+  Serial.print(checkSum);
+  Serial.println("");
+#endif
+
   delay(1000);
+}
+void LORA_Sleep(){
+  myLora.sleep(9000000);
 }
