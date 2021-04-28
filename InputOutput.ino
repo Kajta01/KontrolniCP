@@ -8,6 +8,8 @@ void IO_Setup()
    pinMode(LED2, OUTPUT);
    pinMode(BUZZER, OUTPUT);
    pinMode(LORA_RESET, OUTPUT);
+
+   pinMode(BATTERY_PIN_START_MEASURE, OUTPUT);
 }
 
 void LedOn()
@@ -50,7 +52,7 @@ void feedback(feedbackStatus status)
       }
       break;
    case FULL_MEMORY:
-         for (int i = 0; i < 4; i++)
+      for (int i = 0; i < 4; i++)
       {
          digitalWrite(LED2, HIGH);
          digitalWrite(BUZZER, HIGH);
@@ -60,44 +62,46 @@ void feedback(feedbackStatus status)
          delay(100);
       }
       break;
-
    }
    LedOff();
 }
 
-int getIDDevice(){
+int getIDDevice()
+{
    return (int)ID_DEVICE;
 }
 
 float ReadAnalogVoltage()
 {
-   return (analogRead(BATTERY_PIN) * (3.3 / 1023.00));
+   digitalWrite(BATTERY_PIN_START_MEASURE, HIGH);
+   float r = (analogRead(BATTERY_PIN) * (3.3 / 1023.00));
+   digitalWrite(BATTERY_PIN_START_MEASURE, LOW);
+   return r;
 }
 
 void GoingToSleep()
 {
 #if DEBUG
-Serial.println("Go sleep");
-delay(2000);
-#endif   
+   Serial.println("Go sleep");
+   delay(2000);
+#endif
    WTG_disable();
-   
-   
-  // LORA_Sleep();
-   
+
+   // LORA_Sleep();
+
    EIFR = (1 << INTF0); //Write 1 to Interrupt Flag 0 to make sure it is reset
    sleep_enable();
    attachInterrupt(0, wakeUp, HIGH);
    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
    delay(100);
    sleep_cpu();
-
 }
 void (*resetFunc)(void) = 0;
 
 void wakeUp()
 {
    detachInterrupt(0);
+   LedOn();
 #if STANOVISTE_WTG
    WTG_enable();
    WTG_reset();
@@ -105,11 +109,17 @@ void wakeUp()
 #if DEBUG
    Serial.println("Fired!");
    delay(100);
-#endif 
+#endif
    sleep_disable();
-   
-   
+
    //resetFunc();
    //hardwareReset();
+}
+void Arduino_Sleep()
+{
+   sleep_enable();
 
+   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+   delay(100);
+   sleep_cpu();
 }

@@ -27,7 +27,7 @@ void setup()
   Serial.begin(9600);
 #endif
 
-#if JEN_LORA
+#if JEN_LORA or M_LORA
   LORA_setup();
 #endif
 
@@ -55,42 +55,50 @@ void loop()
   delay(100);
 #endif
 
-  WTG_reset();
   LORA_initialize_radio();
+  WTG_reset();
   if (RFID_WaitToChip(100))
   {
     LedOn();
     WTG_reset();
     IDtag = RFID_getIDCip();
-    row = RFID_FreeRow();
-    if (row != FULL_MEMORY)
+    if (IDtag != 0XFFFF)
     {
-      RTC_ReadActualDateTime();
-      result = RFID_NewEntry(row, getIDDevice(), RTC_GetDay(), RTC_GetHour(), RTC_GetMinute(), RTC_GetSecond());
-      RFID_Stop();
-      if (result == OK)
+      row = RFID_FreeRow();
+      if (row != FULL_MEMORY)
       {
+        RTC_ReadActualDateTime();
+        result = RFID_NewEntry(row, getIDDevice(), RTC_GetDay(), RTC_GetHour(), RTC_GetMinute(), RTC_GetSecond());
+        RFID_Stop();
+        if (result == OK)
+        {
 
-        WTG_reset();
+          WTG_reset();
 
-        LORA_Send(getIDDevice(), IDtag, RTC_GetHour(), RTC_GetMinute(), RTC_GetSecond(),
-                  ReadAnalogVoltage() * 2, RTC_GetTemperature());
+          LORA_Send(getIDDevice(), IDtag, RTC_GetHour(), RTC_GetMinute(), RTC_GetSecond(),
+                    ReadAnalogVoltage() * 2, RTC_GetTemperature());
 
-        feedback(OK);
+          feedback(OK);
+        }
+        else
+        {
+          feedback(ERROR);
+        }
       }
       else
       {
-        feedback(ERROR);
+        feedback(FULL_MEMORY);
       }
     }
     else
     {
-      feedback(FULL_MEMORY);
+      //TODO: zapis hodin
     }
   }
+  WTG_reset();
   RFID_Stop();
   LORA_Sleep();
-  WTG_reset();
+
   GoingToSleep();
 
 #endif
@@ -128,9 +136,9 @@ void loop()
 
     Serial.println("*********************");
 
-     Serial.println("LORA:");
+    Serial.println("LORA:");
 
-    LORA_Send(10,100,9,51,33,3.51,23.23);
+    LORA_Send(10, 100, 9, 51, 33, 3.51, 23.23);
 
     delay(1000);
     feedback(OK);
@@ -142,7 +150,6 @@ void loop()
   RFID_WaitToChip();
   RFID_OnlyRead();
 #endif
-
 
 #if JEN_WTD
   feedback(OK);
@@ -164,44 +171,76 @@ void loop()
   }
 #endif
 
-
 #if CONN_SERIAL
-  while (Serial.available() == 0) {}
-  int readValue = Serial.readString().toInt();
+
+  // while (Serial.available() == 0) {}
+  int readValue = 1; //Serial.readString().toInt();
   switch (readValue)
   {
   case 1:
     getRowValue();
-    break;  
+    break;
   case 2:
     clearDataAll();
     break;
   case 3:
     zapisIDcipu();
+    // zapisHodinPC();
     break;
-  case 4:
-    zapisHodinPC();
-    break;
-  
+
   default:
     break;
   }
 
-# endif
+#endif
 
+#if M_RFID
+  Serial.println("bb");
+  delay(3000);
+  Serial.println("aa");
+  RFID_WaitToChip(50);
+  RFID_Stop();
+#endif
+#if M_LORA
+  delay(2000);
+  LORA_Send();
+  delay(5000);
+  LORA_Sleep();
+#endif
+#if M_ARDUINO
+  digitalWrite(BATTERY_PIN_START_MEASURE, LOW);
+  delay(2000);
+  Serial.println("aa");
+  Serial.println(ReadAnalogVoltage());
+
+  digitalWrite(BATTERY_PIN_START_MEASURE, HIGH);
+  delay(2000);
+  Serial.println("aa");
+  Serial.println(ReadAnalogVoltage());
+#endif
+#if M_Z5V
+
+  feedback(OK);
+  delay(1000);
+  feedback(OK);
+  delay(1000);
+#endif
   delay(2000);
 }
 
-void getRowValue(){
-  while(1){
-  RFID_WaitToChip();
-  RFID_getRowValues();
+void getRowValue()
+{
+  while (1)
+  {
+    RFID_WaitToChip();
+    RFID_getRowValues();
 
-  delay(3000);
+    delay(3000);
   }
 }
 
-void clearDataAll(){
+void clearDataAll()
+{
   while (1)
   {
     RFID_WaitToChip();
@@ -210,25 +249,31 @@ void clearDataAll(){
     bool check = RFID_CheckNullData();
     feedback((int)check);
 
-    #if DEBUG
-      Serial.println(check);
-    #endif
+#if DEBUG
+    Serial.println(check);
+#endif
     delay(3000);
   }
 }
 
-void zapisIDcipu(){
-  while(1){
-  LedOn();
-  int valueW = RFID_zapisID();
-  int valueR = RFID_getIDCip();
-  if (valueW == valueR){
-    feedback(OK);
-  } else {
-    feedback(ERROR);
-  }
+void zapisIDcipu()
+{
+  while (1)
+  {
+    LedOn();
+    int valueW = RFID_zapisID();
+    int valueR = RFID_getIDCip();
+    if (valueW == valueR)
+    {
+      feedback(OK);
+    }
+    else
+    {
+      feedback(ERROR);
+    }
   }
 }
-void zapisHodinPC(){
-  // cip FFFF
+void zapisHodinPC()
+{
+  //TODO: cip FFFF
 }

@@ -40,8 +40,6 @@
 #include <rn2xx3.h>
 #include <SoftwareSerial.h>
 
-
-
 SoftwareSerial mySerial(LORA_RX, LORA_TX); // RX, TX
 
 //create an instance of the rn2xx3 library,
@@ -58,6 +56,7 @@ void LORA_setup()
 
   initialize_radio();
   //transmit a startup message
+  Serial.println("Tx T");
   myLora.tx("T");
 
   delay(100);
@@ -65,26 +64,26 @@ void LORA_setup()
 void LORA_initialize_radio()
 {
   //reset rn2483
-  
+
   myLora.autobaud();
-  }
+}
 
 void initialize_radio()
 {
   //reset rn2483
-  
+
   digitalWrite(LORA_RESET, LOW);
   delay(500);
   digitalWrite(LORA_RESET, HIGH);
-  
+
   delay(100); //wait for the RN2xx3's startup message
   mySerial.flush();
 
   //Autobaud the rn2483 module to 9600. The default would otherwise be 57600.
   myLora.autobaud();
 
-  //check communication with radio
-  #if 0//DEBUG
+//check communication with radio
+#if 0 //DEBUG
   String hweui = myLora.hweui();
   while (hweui.length() != 16)
   {
@@ -104,8 +103,7 @@ void initialize_radio()
   //configure your keys and join the network
   Serial.println("Trying to join TTN");
 
-  myLora.initABP((char*)LORA_DEV_ADDR, (char*)LORA_APPS_KEY, (char*)LORA_NWKS_KEY);
-
+  myLora.initABP((char *)LORA_DEV_ADDR, (char *)LORA_APPS_KEY, (char *)LORA_NWKS_KEY);
 
   Serial.println("Joined");
 }
@@ -113,7 +111,6 @@ void initialize_radio()
 // the loop routine runs over and over again forever:
 void LORA_Send()
 {
-
 
   //myLora.tx(String(ID_DEVICE)); //one byte, blocking function
   byte writeLora[10] = {0x0};
@@ -127,33 +124,32 @@ void LORA_Send()
   myLora.txBytes(writeLora, sizeof(writeLora));
 
   delay(1000);
-    
 }
-void LORA_Send(byte ID_Device, byte ID_TAG, byte Hour, byte Minute, byte Second, float Battery, float Temperature  )
+void LORA_Send(byte ID_Device, byte ID_TAG, byte Hour, byte Minute, byte Second, float Battery, float Temperature)
 {
-int checkSum = 0;
-int TemperatureI = (int)((Temperature+273)*10);
+  int checkSum = 0;
+  int TemperatureI = (int)((Temperature + 273) * 10);
   byte writeLora[10] = {0x0};
   memset(writeLora, 0, sizeof(writeLora));
   writeLora[0] = 0x11; // send data
   writeLora[1] = ID_Device;
   writeLora[2] = (byte)(ID_TAG >> 8) & 0xFF;
-  writeLora[3] = (byte) ID_TAG & 0xFF; 
+  writeLora[3] = (byte)ID_TAG & 0xFF;
   writeLora[4] = Hour;
   writeLora[5] = Minute;
   writeLora[6] = Second;
   writeLora[7] = Battery * 10;
-  writeLora[8] = (byte) (TemperatureI >> 8) & 0xFF;
-  writeLora[9] = (byte) TemperatureI & 0xFF;
+  writeLora[8] = (byte)(TemperatureI >> 8) & 0xFF;
+  writeLora[9] = (byte)TemperatureI & 0xFF;
 
-
-  for(int i = 0;i< sizeof(writeLora);i++){
+  for (int i = 0; i < sizeof(writeLora); i++)
+  {
     checkSum += writeLora[i];
   }
   Serial.println("tx");
   myLora.txBytes(writeLora, sizeof(writeLora));
 
-    #if DEBUG
+#if DEBUG
   Serial.println(" ************************************************* ");
   Serial.println("LORA zápis");
   Serial.print("IDcip: ");
@@ -177,6 +173,7 @@ int TemperatureI = (int)((Temperature+273)*10);
 
   delay(1000);
 }
-void LORA_Sleep(){
+void LORA_Sleep()
+{
   myLora.sleep(9000000);
 }

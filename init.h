@@ -1,11 +1,12 @@
-#define ID_DEVICE 30
+#define ID_DEVICE 10
 // Lora
-#define LORA_DEV_ADDR "26011C79"
-#define LORA_NWKS_KEY "B5C7617898FE02D5B85C96982E7BEA73"
-#define LORA_APPS_KEY "2DAA66D68271DEAAF00FA821B4EEC5F5"
+#define LORA_DEV_ADDR "26013E5E"
+#define LORA_NWKS_KEY "3F89B93C069B1224B6C0656470269989"
+#define LORA_APPS_KEY "61000EE5191DB1E5B1F334E80B0D4EAF"
 
 // // batery
 #define BATTERY_PIN A2
+#define BATTERY_PIN_START_MEASURE A3
 // //RFID
 #define RFID_RST_PIN A0 // Configurable, see typical pin layout above
 #define RFID_SS_PIN 10  // Configurable, see typical pin layout above
@@ -30,7 +31,7 @@
 #define STANOVISTE_WTG              0
 
 
-#define CONN_SERIAL                 0
+#define CONN_SERIAL                 1
 
 #define JEN_CTENI                   0 // tabulkový výpis 
 #define JEN_VYPIS                   0
@@ -39,3 +40,10 @@
 
 /////////////////////////////////
 #define DEBUG                       0
+
+//////////////////////////////////// jednotlive moduly
+
+#define M_RFID    0
+#define M_LORA    0
+#define M_ARDUINO 0
+#define M_Z5V 0

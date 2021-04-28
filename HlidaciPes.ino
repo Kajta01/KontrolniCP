@@ -43,7 +43,7 @@ void endlessLoop()
 
 ISR(WDT_vect)
 {
-  #if DEBUG
+#if DEBUG
   Serial.println("hardwareReset");
   delay(100);
 #endif
